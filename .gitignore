@@ -1,0 +1,25 @@
+###> project-private ###
+CHALLENGE_DEBRIEF.Md
+CLAUDE.md
+.claude/
+###< project-private ###
+
+###> symfony ###
+/.env.local
+/.env.local.php
+/.env.*.local
+/config/secrets/prod/prod.decrypt.private.php
+/public/bundles/
+/var/
+/vendor/
+###< symfony ###
+
+###> phpunit ###
+/phpunit.xml
+/.phpunit.cache/
+###< phpunit ###
+
+###> docker ###
+/docker-compose.override.yml
+/compose.override.yaml
+###< docker ###

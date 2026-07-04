@@ -1,0 +1,62 @@
+services:
+  app:
+    build:
+      context: .
+      dockerfile: docker/php/Dockerfile
+    container_name: fever_app
+    volumes:
+      - .:/app
+    depends_on:
+      db:
+        condition: service_healthy
+    environment:
+      DATABASE_URL: "mysql://app:app@db:3306/fever?serverVersion=8.0"
+    command: sh -c "composer install --no-interaction && php bin/console doctrine:migrations:migrate --no-interaction && php-fpm"
+
+  nginx:
+    image: nginx:alpine
+    container_name: fever_nginx
+    volumes:
+      - .:/app
+      - ./docker/nginx/nginx.conf:/etc/nginx/conf.d/default.conf
+    ports:
+      - "8000:80"
+    depends_on:
+      - app
+
+  sync:
+    build:
+      context: .
+      dockerfile: docker/php/Dockerfile
+    container_name: fever_sync
+    volumes:
+      - .:/app
+    depends_on:
+      db:
+        condition: service_healthy
+    environment:
+      DATABASE_URL: "mysql://app:app@db:3306/fever?serverVersion=8.0"
+    # Loop simple para el ejercicio: en producción esto sería un cron real o un scheduler.
+    # Se documenta como decisión consciente de simplicidad para el alcance de 72h.
+    command: sh -c "composer install --no-interaction && while true; do php bin/console app:sync-plans; sleep 60; done"
+
+  db:
+    image: mysql:8.0
+    container_name: fever_db
+    environment:
+      MYSQL_ROOT_PASSWORD: root
+      MYSQL_DATABASE: fever
+      MYSQL_USER: app
+      MYSQL_PASSWORD: app
+    ports:
+      - "3306:3306"
+    volumes:
+      - db_data:/var/lib/mysql
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-uapp", "-papp"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+volumes:
+  db_data:
