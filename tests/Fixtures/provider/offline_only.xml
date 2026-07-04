@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<planList xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" version="1.0" xsi:noNamespaceSchemaLocation="planList.xsd">
+   <output>
+      <base_plan base_plan_id="444" sell_mode="offline" organizer_company_id="1" title="Tributo a Juanito Valderrama">
+         <plan plan_start_date="2021-08-10T20:00:00" plan_end_date="2021-08-10T21:00:00" plan_id="1642" sell_from="2021-02-10T00:00:00" sell_to="2021-08-09T19:50:00" sold_out="false">
+            <zone zone_id="7" capacity="22" price="65.00" name="Amfiteatre" numbered="false" />
+         </plan>
+      </base_plan>
+   </output>
+</planList>

@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<planList version="1.0">
+   <output>
+      <base_plan base_plan_id="291" sell_mode="online" title="Camela en concierto">
+         <plan plan_start_date="2021-06-30T21:00:00" plan_id="291">
+            <zone zone_id="40" capacity="243" price="20.00" name="Platea" numbered="true" />
+         </plan>
+      <!-- missing closing base_plan and output tags -->

@@ -10,6 +10,7 @@ readonly class Event
 {
     /** @param Zone[] $zones */
     public function __construct(
+        private string              $basePlanId,
         private string              $planId,
         private string              $title,
         private SellMode            $sellMode,
@@ -18,6 +19,9 @@ readonly class Event
         private array               $zones,
     ) {}
 
+    // Identity is the composite (basePlanId, planId): plan_id alone is not unique — the same
+    // plan_id appears under different base_plans in a single provider response.
+    public function basePlanId(): string { return $this->basePlanId; }
     public function planId(): string   { return $this->planId; }
     public function title(): string    { return $this->title; }
     public function sellMode(): SellMode { return $this->sellMode; }

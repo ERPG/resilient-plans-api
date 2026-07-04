@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<planList xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" version="1.0" xsi:noNamespaceSchemaLocation="planList.xsd">
+   <output>
+      <base_plan base_plan_id="700" sell_mode="online" title="Impossible date event">
+         <plan plan_start_date="2021-09-31T20:00:00" plan_end_date="2021-09-31T21:00:00" plan_id="900" sell_from="2021-02-10T00:00:00" sell_to="2021-09-30T19:50:00" sold_out="false">
+            <zone zone_id="7" capacity="22" price="65.00" name="Amfiteatre" numbered="false" />
+         </plan>
+      </base_plan>
+      <base_plan base_plan_id="701" sell_mode="online" title="Valid event">
+         <plan plan_start_date="2021-10-01T20:00:00" plan_end_date="2021-10-01T21:00:00" plan_id="901" sell_from="2021-02-10T00:00:00" sell_to="2021-09-30T19:50:00" sold_out="false">
+            <zone zone_id="8" capacity="10" price="40.00" name="Platea" numbered="true" />
+         </plan>
+      </base_plan>
+   </output>
+</planList>
