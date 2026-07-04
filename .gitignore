@@ -1,7 +1,11 @@
 ###> project-private ###
-CHALLENGE_DEBRIEF.Md
+CHALLENGE_DEBRIEF.MD
 CLAUDE.md
 .claude/
+EXECUTION_PLAN*.md
+.cursor/
+.aider
+.continue/
 ###< project-private ###
 
 ###> symfony ###
@@ -17,6 +21,7 @@ CLAUDE.md
 ###> phpunit ###
 /phpunit.xml
 /.phpunit.cache/
+.phpunit.result.cache
 ###< phpunit ###
 
 ###> docker ###
