@@ -3,6 +3,7 @@ CHALLENGE_DEBRIEF.MD
 CLAUDE.md
 .claude/
 EXECUTION_PLAN*.md
+README.private.md
 .cursor/
 .aider
 .continue/

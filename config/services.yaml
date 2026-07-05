@@ -12,6 +12,8 @@ services:
 
     App\Application\Provider\PlanProvider: '@App\Infrastructure\Provider\Http\HttpPlanProvider'
 
+    App\Domain\Event\EventRepository: '@App\Infrastructure\Persistence\Doctrine\DoctrineEventRepository'
+
     App\Infrastructure\Provider\Http\HttpPlanProvider:
         arguments:
             $baseUrl: '%env(PROVIDER_BASE_URL)%'

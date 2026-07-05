@@ -1,51 +1,41 @@
-Fever Code Challenge
+# Fever Code Challenge
 
-> El enunciado original de Fever se conserva en `CHALLENGE.md` (renombrado desde el README
-> que trajo el repo). Este README documenta las decisiones de diseño, tal como pide el
-> criterio de evaluación de documentación.
+> Enunciado original en `CHALLENGE.md`. El razonamiento extendido de cada decisión (borrador) vive
+> en `README.private.md` (no versionado); la versión final de este README se curará desde ahí.
 
-## Cómo levantar el proyecto
+## Cómo levantar
 ```
 make run
 ```
-Levanta la app, el worker de sincronización y la base de datos con un único comando.
+App + worker de sincronización + base de datos, en un comando.
+
+## Cómo testear
+```
+make test
+```
+Prepara una BD de test aislada (`fever_test`) y ejecuta la suite completa (unitarios + integración).
 
 ## Arquitectura
-[Diagrama/explicación de capas: Domain / Application / Infrastructure]
-[Por qué la sincronización está desacoplada del endpoint de búsqueda]
+Capas **Domain / Application / Infrastructure**. La sincronización con el proveedor está
+desacoplada del endpoint de búsqueda: el endpoint solo lee de la BD local, así responde aunque el
+proveedor esté caído o lento.
 
-## Decisiones de diseño y trade-offs
-- **Identidad de un evento = par compuesto `(base_plan_id, plan_id)`**, no `plan_id` solo. Los
-  datos reales del proveedor lo obligan: en una misma respuesta, `plan_id=1642` aparece bajo
-  `base_plan` 322 y 1591 — `plan_id` no es único ni dentro de una respuesta. Cada `<plan>` hijo
-  es un evento (un `base_plan` puede tener varias fechas). En BD será `UNIQUE(base_plan_id,
-  plan_id)`. El `id` público del endpoint = `base_plan_id`.
-- [min_price/max_price excluye zonas con capacity=0 — por qué]
-- [filtro de fechas por contención completa, no solapamiento — por qué]
-- [MySQL sobre Postgres — por qué]
-- [Loop simple en vez de cron real para la sincronización — por qué, y cómo se haría en producción]
+## Decisiones clave
+_(resumen; razonamiento y trade-offs completos en `README.private.md`)_
 
-## Integración con el proveedor (capa Infrastructure/Provider)
-- El endpoint de búsqueda **nunca** llama al proveedor. `HttpPlanProvider` (adaptador del port
-  `Application\Provider\PlanProvider`) sólo lo usa la sincronización. Timeout + `max_duration`
-  explícitos: un proveedor lento no puede colgar el proceso.
-- Todo fallo del feed (red, timeout, HTTP no-2xx, XML malformado) se traduce a una única
-  excepción `ProviderUnavailable`: el llamante hace log-and-skip, nunca revienta.
-- **Parseo con SimpleXML** manual y explícito (defendible línea a línea) frente a la magia del
-  Serializer. Trade-off: SimpleXML carga el documento entero en memoria; para el "extra mile"
-  de miles de planes se migraría a `XMLReader` en streaming.
-- **Fechas:** se parsean en UTC con `createFromFormat` + `getLastErrors()`, no con el
-  constructor de `DateTimeImmutable` — éste no lanza con fechas imposibles (`2021-09-31` se
-  desborda silenciosamente a 1-oct). Un plan con fecha imposible se descarta, el feed sobrevive.
-- **El filtro `sell_mode=online` NO vive en el parser**, sino en la capa de sincronización: el
-  provider mapea todos los eventos preservando el `SellMode`; la regla de negocio queda en un
-  único sitio evidente.
+- **Identidad del evento = `(base_plan_id, plan_id)`** — `plan_id` no es único por sí solo.
+- **`id` público = UUIDv5 determinista** de ese par (tipo `uuid` nativo de Postgres, es la PK).
+- **Postgres sobre MySQL** — tablas heap: un `uuid` como PK no fragmenta datos.
+- **Fechas en `TIMESTAMP WITHOUT TIME ZONE`** — se preserva la hora local del proveedor, sin
+  conversión de zona.
+- **`min/max` excluye zonas con `capacity=0`**; las zonas no se persisten (se guarda el cálculo).
+- **Entidad Doctrine separada del dominio** (`EventRecord` + `EventMapper`); nunca se borra
+  (`last_seen_at`).
+- **Proveedor desacoplado**: todo fallo del feed → `ProviderUnavailable` (log-and-skip); el filtro
+  `sell_mode=online` vive en la sincronización.
 
 ## Uso de IA
-[Documentar aquí cómo se usó Claude/IA: para qué partes, cómo se revisó el código generado]
+_(pendiente)_
 
-## Testing
-[Cómo ejecutar los tests: make test. Qué cubren los unitarios vs los de integración]
-
-## Extra mile (si hay tiempo)
-[Escalabilidad, alto tráfico, optimización — implementado o descrito]
+## Extra mile
+_(pendiente)_

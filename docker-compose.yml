@@ -10,7 +10,7 @@ services:
       db:
         condition: service_healthy
     environment:
-      DATABASE_URL: "mysql://app:app@db:3306/fever?serverVersion=8.0"
+      DATABASE_URL: "postgresql://app:app@db:5432/fever?serverVersion=16"
     command: sh -c "composer install --no-interaction && php bin/console doctrine:migrations:migrate --no-interaction && php-fpm"
 
   nginx:
@@ -35,25 +35,25 @@ services:
       db:
         condition: service_healthy
     environment:
-      DATABASE_URL: "mysql://app:app@db:3306/fever?serverVersion=8.0"
+      DATABASE_URL: "postgresql://app:app@db:5432/fever?serverVersion=16"
     # Loop simple para el ejercicio: en producción esto sería un cron real o un scheduler.
     # Se documenta como decisión consciente de simplicidad para el alcance de 72h.
     command: sh -c "composer install --no-interaction && while true; do php bin/console app:sync-plans; sleep 60; done"
 
   db:
-    image: mysql:8.0
+    image: postgres:16-alpine
     container_name: fever_db
     environment:
-      MYSQL_ROOT_PASSWORD: root
-      MYSQL_DATABASE: fever
-      MYSQL_USER: app
-      MYSQL_PASSWORD: app
+      POSTGRES_DB: fever
+      POSTGRES_USER: app
+      POSTGRES_PASSWORD: app
     ports:
-      - "3306:3306"
+      # Host 5433 (5432 may be taken by a local Postgres); inside the network it's still db:5432.
+      - "5433:5432"
     volumes:
-      - db_data:/var/lib/mysql
+      - db_data:/var/lib/postgresql/data
     healthcheck:
-      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-uapp", "-papp"]
+      test: ["CMD-SHELL", "pg_isready -U app -d fever"]
       interval: 5s
       timeout: 5s
       retries: 10

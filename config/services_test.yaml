@@ -1,0 +1,16 @@
+# No consumer yet (sync command is a later phase), so the compiler prunes these — expose them
+# publicly in test so self::getContainer() can fetch them.
+services:
+    _defaults:
+        autowire: true
+        autoconfigure: true
+
+    App\Infrastructure\Persistence\Doctrine\DoctrineEventRepository:
+        public: true
+
+    App\Infrastructure\Persistence\Doctrine\EventMapper:
+        public: true
+
+    App\Domain\Event\EventRepository:
+        alias: App\Infrastructure\Persistence\Doctrine\DoctrineEventRepository
+        public: true

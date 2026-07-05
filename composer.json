@@ -19,6 +19,7 @@
         "symfony/http-client": "^7.1",
         "symfony/runtime": "^7.1",
         "symfony/serializer": "^7.1",
+        "symfony/uid": "^7.4",
         "symfony/yaml": "^7.1"
     },
     "require-dev": {

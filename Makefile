@@ -14,8 +14,14 @@ logs: ## Tail container logs
 shell: ## Shell into app container
 	docker compose exec app sh
 
-test: ## Run test suite
-	docker compose exec app ./vendor/bin/phpunit
+# fever_test override: the container's real DATABASE_URL (=fever) wins over .env.test, so we force
+# it here. Postgres' `app` user is a container superuser and can CREATE the db — no root needed.
+TEST_DATABASE_URL = postgresql://app:app@db:5432/fever_test?serverVersion=16
+
+test: ## Run test suite (prepares the test DB, then runs unit + integration tests)
+	docker compose exec -e DATABASE_URL="$(TEST_DATABASE_URL)" app php bin/console doctrine:database:create --if-not-exists
+	docker compose exec -e DATABASE_URL="$(TEST_DATABASE_URL)" app php bin/console doctrine:migrations:migrate --no-interaction
+	docker compose exec -e DATABASE_URL="$(TEST_DATABASE_URL)" app ./vendor/bin/phpunit
 
 sync: ## Manually trigger plan synchronisation
 	docker compose exec sync php bin/console app:sync-plans
