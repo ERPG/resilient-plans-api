@@ -57,4 +57,13 @@ final class HttpPlanProviderTest extends TestCase
         $this->expectException(ProviderUnavailable::class);
         $this->provider($client)->fetchEvents();
     }
+
+    /** A 200 carrying an HTML error page instead of the feed is still a ProviderUnavailable. */
+    public function testMalformedDocumentBecomesProviderUnavailable(): void
+    {
+        $client = new MockHttpClient(new MockResponse($this->fixture('malformed_document.xml'), ['http_code' => 200]));
+
+        $this->expectException(ProviderUnavailable::class);
+        $this->provider($client)->fetchEvents();
+    }
 }

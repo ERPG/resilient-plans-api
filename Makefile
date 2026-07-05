@@ -1,6 +1,6 @@
 .PHONY: run up down logs shell test sync
 
-run: ## Start app + sync worker + db
+run: ## Start app + db (sync is run on demand via `make sync`, not a worker)
 	docker compose up --build -d
 
 up: run
@@ -24,4 +24,4 @@ test: ## Run test suite (prepares the test DB, then runs unit + integration test
 	docker compose exec -e DATABASE_URL="$(TEST_DATABASE_URL)" app ./vendor/bin/phpunit
 
 sync: ## Manually trigger plan synchronisation
-	docker compose exec sync php bin/console app:sync-plans
+	docker compose exec app php bin/console app:sync-plans

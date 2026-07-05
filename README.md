@@ -7,7 +7,15 @@
 ```
 make run
 ```
-App + worker de sincronización + base de datos, en un comando.
+App + base de datos, en un comando.
+
+## Sincronización con el proveedor
+```
+make sync          # equivale a: docker compose exec app php bin/console app:sync-plans
+```
+`app:sync-plans` baja el feed, filtra `sell_mode=online` y hace upsert idempotente en la BD local.
+Agnóstico del disparo (sin cron ni worker en el stack): en producción lo lanza el scheduler del
+entorno. Si el proveedor falla, sale con código ≠ 0 sin crashear.
 
 ## Cómo testear
 ```
@@ -32,7 +40,8 @@ _(resumen; razonamiento y trade-offs completos en `README.private.md`)_
 - **Entidad Doctrine separada del dominio** (`EventRecord` + `EventMapper`); nunca se borra
   (`last_seen_at`).
 - **Proveedor desacoplado**: todo fallo del feed → `ProviderUnavailable` (log-and-skip); el filtro
-  `sell_mode=online` vive en la sincronización.
+  `sell_mode=online` vive en la sincronización (Application), no en el parser.
+- **Sync agnóstico del disparo y síncrono** — sin cron/worker en el stack ni job async; on-demand.
 
 ## Uso de IA
 _(pendiente)_

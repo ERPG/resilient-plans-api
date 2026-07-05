@@ -1,0 +1,12 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8">
+    <title>502 Bad Gateway</title>
+  </head>
+  <body>
+    <h1>502 Bad Gateway</h1>
+    <p>The provider returned an HTML error page instead of the plan feed.<br>
+    Not well-formed XML, so the parser must reject it.
+  </body>
+</html>

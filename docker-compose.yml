@@ -24,21 +24,8 @@ services:
     depends_on:
       - app
 
-  sync:
-    build:
-      context: .
-      dockerfile: docker/php/Dockerfile
-    container_name: fever_sync
-    volumes:
-      - .:/app
-    depends_on:
-      db:
-        condition: service_healthy
-    environment:
-      DATABASE_URL: "postgresql://app:app@db:5432/fever?serverVersion=16"
-    # Loop simple para el ejercicio: en producción esto sería un cron real o un scheduler.
-    # Se documenta como decisión consciente de simplicidad para el alcance de 72h.
-    command: sh -c "composer install --no-interaction && while true; do php bin/console app:sync-plans; sleep 60; done"
+  # Sin servicio `sync`: `app:sync-plans` es agnóstico del disparo (lo invoca el scheduler del
+  # entorno en prod; `make sync` en local). Racionalidad en README.private.md.
 
   db:
     image: postgres:16-alpine
