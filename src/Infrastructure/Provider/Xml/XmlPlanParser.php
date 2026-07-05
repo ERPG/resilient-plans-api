@@ -8,7 +8,7 @@ use App\Domain\Event\Event;
 use App\Domain\Event\ProviderName;
 use App\Domain\Event\SellMode;
 use App\Domain\Event\Zone;
-use App\Infrastructure\Provider\ProviderUnavailable;
+use App\Application\Provider\ProviderUnavailable;
 
 /**
  * Turns the provider XML into domain Events. Pure string -> Event[]: no HTTP, no DB, no filtering.

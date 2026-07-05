@@ -6,7 +6,7 @@ namespace App\Infrastructure\Provider\Http;
 
 use App\Application\Provider\PlanProvider;
 use App\Domain\Event\ProviderName;
-use App\Infrastructure\Provider\ProviderUnavailable;
+use App\Application\Provider\ProviderUnavailable;
 use App\Infrastructure\Provider\Xml\XmlPlanParser;
 use Symfony\Contracts\HttpClient\Exception\ExceptionInterface;
 use Symfony\Contracts\HttpClient\Exception\TransportExceptionInterface;

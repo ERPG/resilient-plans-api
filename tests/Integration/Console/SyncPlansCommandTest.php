@@ -10,7 +10,7 @@ use App\Application\Sync\SyncPlansUseCase;
 use App\Domain\Event\EventRepository;
 use App\Infrastructure\Console\SyncPlansCommand;
 use App\Infrastructure\Provider\Http\HttpPlanProvider;
-use App\Infrastructure\Provider\ProviderUnavailable;
+use App\Application\Provider\ProviderUnavailable;
 use App\Infrastructure\Provider\Xml\XmlPlanParser;
 use Doctrine\DBAL\Connection;
 use Doctrine\ORM\EntityManagerInterface;

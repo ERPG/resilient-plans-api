@@ -61,7 +61,7 @@ final class DoctrineEventRepositoryTest extends KernelTestCase
 
         $row = $rows[0];
         self::assertSame($this->mapper->id($event)->toRfc4122(), $row['id']);
-        self::assertSame('code-challenge', $row['provider_name']);
+        self::assertSame('feverup', $row['provider_name']);
         self::assertSame('322:1642', $row['external_identity']);
         self::assertSame('15.00', $row['min_price']); // capacity=0 zone excluded
         self::assertSame('30.00', $row['max_price']);

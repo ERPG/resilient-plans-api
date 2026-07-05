@@ -6,7 +6,7 @@ namespace App\Tests\Unit\Infrastructure\Provider\Http;
 
 use App\Domain\Event\ProviderName;
 use App\Infrastructure\Provider\Http\HttpPlanProvider;
-use App\Infrastructure\Provider\ProviderUnavailable;
+use App\Application\Provider\ProviderUnavailable;
 use App\Infrastructure\Provider\Xml\XmlPlanParser;
 use PHPUnit\Framework\TestCase;
 use Symfony\Component\HttpClient\Exception\TimeoutException;

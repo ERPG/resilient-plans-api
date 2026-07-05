@@ -6,7 +6,7 @@ namespace App\Application\Sync;
 
 use App\Application\Provider\PlanProvider;
 use App\Domain\Event\EventRepository;
-use App\Infrastructure\Provider\ProviderUnavailable;
+use App\Application\Provider\ProviderUnavailable;
 
 /**
  * Orchestrates the sync through the two ports only (no Doctrine/HttpClient), so it unit-tests

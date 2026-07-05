@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace App\Infrastructure\Provider;
+namespace App\Application\Provider;
 
 /**
  * The provider feed could not be turned into usable data: network failure, timeout, non-2xx

@@ -7,7 +7,7 @@ namespace App\Tests\Unit\Infrastructure\Provider\Xml;
 use App\Domain\Event\Event;
 use App\Domain\Event\ProviderName;
 use App\Domain\Event\SellMode;
-use App\Infrastructure\Provider\ProviderUnavailable;
+use App\Application\Provider\ProviderUnavailable;
 use App\Infrastructure\Provider\Xml\XmlPlanParser;
 use PHPUnit\Framework\TestCase;
 

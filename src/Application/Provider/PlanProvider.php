@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace App\Application\Provider;
 
 use App\Domain\Event\Event;
-use App\Infrastructure\Provider\ProviderUnavailable;
+use App\Application\Provider\ProviderUnavailable;
 
 /**
  * Port to the external provider feed. Returns every plan the provider currently exposes,
