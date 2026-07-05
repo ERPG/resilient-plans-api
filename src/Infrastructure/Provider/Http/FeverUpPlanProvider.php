@@ -16,7 +16,7 @@ use Symfony\Contracts\HttpClient\HttpClientInterface;
  * Adapter over the provider HTTP feed: fetches and delegates parsing to XmlPlanParser.
  * Every failure mode (down, slow, non-2xx, malformed) collapses into ProviderUnavailable.
  */
-final readonly class HttpPlanProvider implements PlanProvider
+final readonly class FeverUpPlanProvider implements PlanProvider
 {
     public function __construct(
         private HttpClientInterface $httpClient,
