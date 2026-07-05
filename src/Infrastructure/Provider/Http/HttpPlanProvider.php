@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Infrastructure\Provider\Http;
 
 use App\Application\Provider\PlanProvider;
+use App\Domain\Event\ProviderName;
 use App\Infrastructure\Provider\ProviderUnavailable;
 use App\Infrastructure\Provider\Xml\XmlPlanParser;
 use Symfony\Contracts\HttpClient\Exception\ExceptionInterface;
@@ -47,6 +48,6 @@ final readonly class HttpPlanProvider implements PlanProvider
 
         // No blanket-catch: the parser raises malformedXml for broken docs; any other throwable is
         // our bug and must surface, not be disguised as a provider fault. (See README.private.md.)
-        return $this->parser->parse($body);
+        return $this->parser->parse($body, ProviderName::FeverUp);
     }
 }

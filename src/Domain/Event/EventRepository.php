@@ -10,6 +10,6 @@ namespace App\Domain\Event;
  */
 interface EventRepository
 {
-    /** Upsert one event, keyed by its identity (basePlanId, planId). Never deletes. */
+    /** Upsert one event, keyed by its identity (providerName, externalIdentity). Never deletes. */
     public function save(Event $event): void;
 }

@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Tests\Unit\Infrastructure\Provider\Http;
 
+use App\Domain\Event\ProviderName;
 use App\Infrastructure\Provider\Http\HttpPlanProvider;
 use App\Infrastructure\Provider\ProviderUnavailable;
 use App\Infrastructure\Provider\Xml\XmlPlanParser;

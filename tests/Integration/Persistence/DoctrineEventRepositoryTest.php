@@ -6,6 +6,7 @@ namespace App\Tests\Integration\Persistence;
 
 use App\Domain\Event\Event;
 use App\Domain\Event\EventRepository;
+use App\Domain\Event\ProviderName;
 use App\Domain\Event\SellMode;
 use App\Domain\Event\Zone;
 use App\Infrastructure\Persistence\Doctrine\EventMapper;
@@ -60,8 +61,8 @@ final class DoctrineEventRepositoryTest extends KernelTestCase
 
         $row = $rows[0];
         self::assertSame($this->mapper->id($event)->toRfc4122(), $row['id']);
-        self::assertSame('322', $row['base_plan_id']);
-        self::assertSame('1642', $row['plan_id']);
+        self::assertSame('code-challenge', $row['provider_name']);
+        self::assertSame('322:1642', $row['external_identity']);
         self::assertSame('15.00', $row['min_price']); // capacity=0 zone excluded
         self::assertSame('30.00', $row['max_price']);
         self::assertNotEmpty($row['last_seen_at']);
@@ -98,11 +99,11 @@ final class DoctrineEventRepositoryTest extends KernelTestCase
         $this->repository->save($a);
         $this->repository->save($b);
 
-        $ids = $this->connection->fetchFirstColumn('SELECT id FROM events ORDER BY base_plan_id');
+        $ids = $this->connection->fetchFirstColumn('SELECT id FROM events ORDER BY external_identity');
         self::assertCount(2, $ids);
         self::assertNotSame($ids[0], $ids[1]);
         self::assertSame($this->mapper->id($a)->toRfc4122(), $this->connection->fetchOne(
-            'SELECT id FROM events WHERE base_plan_id = ?', ['322'],
+            'SELECT id FROM events WHERE external_identity = ?', ['322:1642'],
         ));
     }
 
@@ -113,13 +114,14 @@ final class DoctrineEventRepositoryTest extends KernelTestCase
         array $zones = [],
     ): Event {
         return new Event(
-            basePlanId: $basePlanId,
-            planId:     $planId,
-            title:      'Test Event',
-            sellMode:   SellMode::Online,
-            startDate:  new \DateTimeImmutable('2021-06-30T21:00:00+00:00'),
-            endDate:    new \DateTimeImmutable('2021-06-30T22:00:00+00:00'),
-            zones:      $zones ?: [new Zone(zoneId: 'z1', capacity: 1, price: 10.0, name: 'A', numbered: false)],
+            providerName:     ProviderName::FeverUp,
+            // Mirrors how the real XML adapter folds (base_plan_id, plan_id) into externalIdentity.
+            externalIdentity: $basePlanId . ':' . $planId,
+            title:            'Test Event',
+            sellMode:         SellMode::Online,
+            startDate:        new \DateTimeImmutable('2021-06-30T21:00:00+00:00'),
+            endDate:          new \DateTimeImmutable('2021-06-30T22:00:00+00:00'),
+            zones:            $zones ?: [new Zone(zoneId: 'z1', capacity: 1, price: 10.0, name: 'A', numbered: false)],
         );
     }
 }

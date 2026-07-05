@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Tests\Integration\Console;
 
 use App\Application\Provider\PlanProvider;
+use App\Domain\Event\ProviderName;
 use App\Application\Sync\SyncPlansUseCase;
 use App\Domain\Event\EventRepository;
 use App\Infrastructure\Console\SyncPlansCommand;
@@ -93,7 +94,29 @@ final class SyncPlansCommandTest extends KernelTestCase
 
         self::assertSame(Command::FAILURE, $tester->getStatusCode());
         self::assertSame(0, (int) $this->connection->fetchOne('SELECT count(*) FROM events'));
-        self::assertStringContainsString('Provider unavailable', $tester->getDisplay());
+        self::assertStringContainsString('provider(s) unavailable', $tester->getDisplay());
+    }
+
+    public function testOneProviderDownDoesNotStopTheOthers(): void
+    {
+        $healthy = $this->httpProvider('response_1.xml');
+        $down    = new class implements PlanProvider {
+            public function fetchEvents(): array
+            {
+                throw ProviderUnavailable::badStatus(503);
+            }
+        };
+
+        $command = new SyncPlansCommand(new SyncPlansUseCase([$down, $healthy], $this->repository));
+        $tester  = new CommandTester($command);
+        $tester->execute([]);
+
+        // The healthy provider's events are persisted even though the other was unreachable.
+        self::assertSame(4, (int) $this->connection->fetchOne('SELECT count(*) FROM events'));
+        // ...but the dead provider still surfaces as a non-zero exit, never a silent success.
+        self::assertSame(Command::FAILURE, $tester->getStatusCode());
+        self::assertStringContainsString('4 processed', $tester->getDisplay());
+        self::assertStringContainsString('provider(s) unavailable', $tester->getDisplay());
     }
 
     public function testEmptyFeedIsSuccessWithZeroProcessed(): void
@@ -108,7 +131,7 @@ final class SyncPlansCommandTest extends KernelTestCase
 
     private function tester(PlanProvider $provider): CommandTester
     {
-        $command = new SyncPlansCommand(new SyncPlansUseCase($provider, $this->repository));
+        $command = new SyncPlansCommand(new SyncPlansUseCase([$provider], $this->repository));
 
         return new CommandTester($command);
     }

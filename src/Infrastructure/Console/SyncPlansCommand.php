@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace App\Infrastructure\Console;
 
 use App\Application\Sync\SyncPlansUseCase;
-use App\Infrastructure\Provider\ProviderUnavailable;
 use Symfony\Component\Console\Attribute\AsCommand;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputInterface;
@@ -13,8 +12,9 @@ use Symfony\Component\Console\Output\OutputInterface;
 use Symfony\Component\Console\Style\SymfonyStyle;
 
 /**
- * Thin trigger-agnostic delivery layer: maps the sync outcome to an exit code. A dead provider
- * yields FAILURE with "0 processed", never an uncaught stack trace. (Rationale in README.private.md.)
+ * Thin trigger-agnostic delivery layer: maps the sync outcome to an exit code. Any unreachable
+ * provider yields FAILURE (never an uncaught stack trace), while the providers that did respond are
+ * still persisted. (Rationale in README.private.md.)
  */
 #[AsCommand(
     name: 'app:sync-plans',
@@ -32,10 +32,15 @@ final class SyncPlansCommand extends Command
     {
         $io = new SymfonyStyle($input, $output);
 
-        try {
-            $report = $this->useCase->run();
-        } catch (ProviderUnavailable $e) {
-            $io->error(sprintf('Provider unavailable, 0 processed: %s', $e->getMessage()));
+        $report = $this->useCase->run();
+
+        if ($report->failedProviders > 0) {
+            $io->error(sprintf(
+                '%d processed, %d skipped (offline), %d provider(s) unavailable.',
+                $report->processed,
+                $report->skippedOffline,
+                $report->failedProviders,
+            ));
 
             return Command::FAILURE;
         }

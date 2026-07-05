@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Tests\Unit\Domain\Event;
 
 use App\Domain\Event\Event;
+use App\Domain\Event\ProviderName;
 use App\Domain\Event\SellMode;
 use App\Domain\Event\Zone;
 use App\Domain\ValueObject\DateRange;
@@ -19,13 +20,13 @@ final class EventTest extends TestCase
         ?string $endDate   = '2021-06-01T12:00:00+00:00',
     ): Event {
         return new Event(
-            basePlanId: '291',
-            planId:    '123',
-            title:     'Test Event',
-            sellMode:  $sellMode,
-            startDate: new \DateTimeImmutable($startDate),
-            endDate:   $endDate ? new \DateTimeImmutable($endDate) : null,
-            zones:     $zones,
+            providerName:     ProviderName::FeverUp,
+            externalIdentity: '291:123',
+            title:            'Test Event',
+            sellMode:         $sellMode,
+            startDate:        new \DateTimeImmutable($startDate),
+            endDate:          $endDate ? new \DateTimeImmutable($endDate) : null,
+            zones:            $zones,
         );
     }
 

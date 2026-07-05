@@ -10,8 +10,8 @@ readonly class Event
 {
     /** @param Zone[] $zones */
     public function __construct(
-        private string              $basePlanId,
-        private string              $planId,
+        private ProviderName        $providerName,
+        private string              $externalIdentity,
         private string              $title,
         private SellMode            $sellMode,
         private \DateTimeImmutable  $startDate,
@@ -19,10 +19,11 @@ readonly class Event
         private array               $zones,
     ) {}
 
-    // Identity is the composite (basePlanId, planId): plan_id alone is not unique — the same
-    // plan_id appears under different base_plans in a single provider response.
-    public function basePlanId(): string { return $this->basePlanId; }
-    public function planId(): string   { return $this->planId; }
+    // Identity is (providerName, externalIdentity). externalIdentity is an opaque string the
+    // adapter builds however its provider's schema requires; the domain never parses it. The
+    // providerName scopes it so two providers can reuse the same external ids without colliding.
+    public function providerName(): ProviderName { return $this->providerName; }
+    public function externalIdentity(): string { return $this->externalIdentity; }
     public function title(): string    { return $this->title; }
     public function sellMode(): SellMode { return $this->sellMode; }
     public function startDate(): \DateTimeImmutable { return $this->startDate; }

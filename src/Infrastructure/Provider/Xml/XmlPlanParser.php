@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Infrastructure\Provider\Xml;
 
 use App\Domain\Event\Event;
+use App\Domain\Event\ProviderName;
 use App\Domain\Event\SellMode;
 use App\Domain\Event\Zone;
 use App\Infrastructure\Provider\ProviderUnavailable;
@@ -17,6 +18,11 @@ use App\Infrastructure\Provider\ProviderUnavailable;
  *   - dates and plan_id live on <plan>  => one <plan> is one Event
  *   - a <base_plan> can hold several <plan> children (same event, different dates)
  *
+ * Identity: this feed keys an event by the (base_plan_id, plan_id) pair — plan_id alone is not
+ * unique, the same plan_id appears under different base_plans. That pairing is this provider's
+ * concern, so we fold it here into the opaque externalIdentity the domain stores; providerName is
+ * supplied by the adapter that owns this feed.
+ *
  * Robustness: the provider is known to send dirty data. A single unparseable plan (e.g. an
  * impossible date like 2021-09-31) is skipped, not fatal — only a malformed *document* raises
  * ProviderUnavailable.
@@ -26,7 +32,7 @@ final class XmlPlanParser
     private const DATE_FORMAT = '!Y-m-d\TH:i:s';
 
     /** @return Event[] */
-    public function parse(string $xml): array
+    public function parse(string $xml, ProviderName $providerName): array
     {
         $root = $this->loadDocument($xml);
 
@@ -42,7 +48,7 @@ final class XmlPlanParser
             }
 
             foreach ($basePlan->plan as $plan) {
-                $event = $this->mapPlan($basePlanId, $title, $sellMode, $plan);
+                $event = $this->mapPlan($providerName, $basePlanId, $title, $sellMode, $plan);
                 if ($event !== null) {
                     $events[] = $event;
                 }
@@ -74,6 +80,7 @@ final class XmlPlanParser
     }
 
     private function mapPlan(
+        ProviderName $providerName,
         string $basePlanId,
         string $title,
         SellMode $sellMode,
@@ -104,13 +111,13 @@ final class XmlPlanParser
         }
 
         return new Event(
-            basePlanId: $basePlanId,
-            planId:     (string) $plan['plan_id'],
-            title:      $title,
-            sellMode:   $sellMode,
-            startDate:  $startDate,
-            endDate:    $endDate,
-            zones:      $zones,
+            providerName:     $providerName,
+            externalIdentity: $basePlanId . ':' . (string) $plan['plan_id'],
+            title:            $title,
+            sellMode:         $sellMode,
+            startDate:        $startDate,
+            endDate:          $endDate,
+            zones:            $zones,
         );
     }
 

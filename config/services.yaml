@@ -5,6 +5,12 @@ services:
         autowire: true
         autoconfigure: true
 
+    # Every PlanProvider implementation is collected under one tag so the sync can iterate all of
+    # them. Adding a second provider = a new tagged service here, no change to the use case.
+    _instanceof:
+        App\Application\Provider\PlanProvider:
+            tags: ['app.plan_provider']
+
     App\:
         resource: '../src/'
         exclude:
@@ -15,6 +21,10 @@ services:
     App\Domain\Event\EventRepository: '@App\Infrastructure\Persistence\Doctrine\DoctrineEventRepository'
 
     App\Application\Search\EventFinder: '@App\Infrastructure\Persistence\Doctrine\DoctrineEventFinder'
+
+    App\Application\Sync\SyncPlansUseCase:
+        arguments:
+            $providers: !tagged_iterator app.plan_provider
 
     App\Infrastructure\Provider\Http\HttpPlanProvider:
         arguments:

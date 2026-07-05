@@ -6,15 +6,18 @@ namespace App\Application\Sync;
 
 use App\Application\Provider\PlanProvider;
 use App\Domain\Event\EventRepository;
+use App\Infrastructure\Provider\ProviderUnavailable;
 
 /**
  * Orchestrates the sync through the two ports only (no Doctrine/HttpClient), so it unit-tests
- * without Symfony. ProviderUnavailable is left to propagate — the command maps it to an exit code.
+ * without Symfony. Runs every configured provider; one unreachable provider is isolated (caught and
+ * counted) so it can't stop the others from syncing.
  */
 final readonly class SyncPlansUseCase
 {
+    /** @param iterable<PlanProvider> $providers */
     public function __construct(
-        private PlanProvider $provider,
+        private iterable $providers,
         private EventRepository $repository,
     ) {}
 
@@ -22,18 +25,29 @@ final readonly class SyncPlansUseCase
     {
         $processed = 0;
         $skippedOffline = 0;
+        $failedProviders = 0;
 
-        foreach ($this->provider->fetchEvents() as $event) {
-            // Business rule kept out of the parser: the marketplace only sells online plans.
-            if (!$event->isOnline()) {
-                ++$skippedOffline;
+        foreach ($this->providers as $provider) {
+            try {
+                $events = $provider->fetchEvents();
+            } catch (ProviderUnavailable) {
+                // One provider being down must not abort the run — count it and move on.
+                ++$failedProviders;
                 continue;
             }
 
-            $this->repository->save($event);
-            ++$processed;
+            foreach ($events as $event) {
+                // Business rule kept out of the parser: the marketplace only sells online plans.
+                if (!$event->isOnline()) {
+                    ++$skippedOffline;
+                    continue;
+                }
+
+                $this->repository->save($event);
+                ++$processed;
+            }
         }
 
-        return new SyncReport($processed, $skippedOffline);
+        return new SyncReport($processed, $skippedOffline, $failedProviders);
     }
 }

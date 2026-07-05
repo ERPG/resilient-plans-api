@@ -7,6 +7,7 @@ namespace App\Tests\Integration\Http;
 use App\Application\Provider\PlanProvider;
 use App\Domain\Event\Event;
 use App\Domain\Event\EventRepository;
+use App\Domain\Event\ProviderName;
 use App\Domain\Event\SellMode;
 use App\Domain\Event\Zone;
 use Doctrine\DBAL\Connection;
@@ -164,13 +165,13 @@ final class SearchControllerTest extends WebTestCase
     private function event(string $basePlanId, string $title, string $start, ?string $end, array $zones = []): Event
     {
         return new Event(
-            basePlanId: $basePlanId,
-            planId:     '1',
-            title:      $title,
-            sellMode:   SellMode::Online,
-            startDate:  new \DateTimeImmutable($start),
-            endDate:    $end === null ? null : new \DateTimeImmutable($end),
-            zones:      $zones ?: [new Zone(zoneId: 'z1', capacity: 1, price: 10.0, name: 'A', numbered: false)],
+            providerName:     ProviderName::FeverUp,
+            externalIdentity: $basePlanId . ':1',
+            title:            $title,
+            sellMode:         SellMode::Online,
+            startDate:        new \DateTimeImmutable($start),
+            endDate:          $end === null ? null : new \DateTimeImmutable($end),
+            zones:            $zones ?: [new Zone(zoneId: 'z1', capacity: 1, price: 10.0, name: 'A', numbered: false)],
         );
     }
 }

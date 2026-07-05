@@ -10,9 +10,9 @@ use Symfony\Component\Uid\Uuid;
 
 /**
  * Maps the domain Event to its Doctrine model. The id is a deterministic UUIDv5 of
- * (basePlanId, planId): the spec wants a uuid, neither provider id is unique alone, and deriving
- * it (vs random) keeps it stable without a DB read. min/max arrive already computed; zones aren't
- * persisted.
+ * (providerName, externalIdentity): the spec wants a uuid, deriving it (vs random) keeps it stable
+ * without a DB read, and folding providerName in keeps two providers from colliding when they reuse
+ * the same external id. min/max arrive already computed; zones aren't persisted.
  */
 final class EventMapper
 {
@@ -24,7 +24,7 @@ final class EventMapper
     {
         return Uuid::v5(
             $this->namespace(),
-            $event->basePlanId() . ':' . $event->planId(),
+            $event->providerName()->value . ':' . $event->externalIdentity(),
         );
     }
 
@@ -37,8 +37,8 @@ final class EventMapper
     {
         return new EventRecord(
             $this->id($event),
-            $event->basePlanId(),
-            $event->planId(),
+            $event->providerName()->value,
+            $event->externalIdentity(),
             $event->title(),
             $event->startDate(),
             $event->endDate(),
