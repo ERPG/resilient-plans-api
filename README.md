@@ -17,6 +17,15 @@ make sync          # equivale a: docker compose exec app php bin/console app:syn
 Agnóstico del disparo (sin cron ni worker en el stack): en producción lo lanza el scheduler del
 entorno. Si el proveedor falla, sale con código ≠ 0 sin crashear.
 
+## Búsqueda
+```
+GET /search?starts_at=2021-06-01T00:00:00Z&ends_at=2021-06-30T23:59:59Z
+```
+Devuelve los eventos online contenidos en el rango, con el envelope del contrato
+(`{data:{events:[...]}, error:null}`; error → `{error:{code,message}, data:null}`, 400/500).
+Solo lee de la BD local: **responde igual aunque el proveedor esté caído** (probado en el test
+funcional inyectando un proveedor que lanza al llamarlo).
+
 ## Cómo testear
 ```
 make test
@@ -42,6 +51,18 @@ _(resumen; razonamiento y trade-offs completos en `README.private.md`)_
 - **Proveedor desacoplado**: todo fallo del feed → `ProviderUnavailable` (log-and-skip); el filtro
   `sell_mode=online` vive en la sincronización (Application), no en el parser.
 - **Sync agnóstico del disparo y síncrono** — sin cron/worker en el stack ni job async; on-demand.
+- **Contención de fechas**: sin `end_date`, contenido si `start_date ∈ [starts, ends]`; con
+  `end_date`, contención completa (`start ≥ starts AND end ≤ ends`). Se ejecuta como `WHERE`
+  indexado (`idx_events_dates`), no cargando filas a PHP.
+- **Read side = puerto `EventFinder` sin use case, Doctrine ORM** — la búsqueda es una sola query
+  (no hay orquestación que justifique una capa, a diferencia del sync); no se sale del ORM sin una
+  medición de rendimiento que lo pida (DBAL descartado). Devuelve un `EventSummary` plano, no
+  rehidrata el `Event` de dominio.
+- **Errores = jerarquía `ApiException` + `ApiExceptionSubscriber`** (`kernel.exception`) como único
+  traductor al envelope — el único punto que ve todo lo que puede fallar en la request.
+- **Fechas de entrada con `Y-m-d\TH:i:sp`** (no `ATOM`): acepta el sufijo `Z` del ejemplo del spec.
+- **Sin paginación (a propósito)**: a este volumen la query indexada responde en ms; el tope /
+  paginación es palanca de producción documentada, no implementada (no se toca el contrato).
 
 ## Uso de IA
 _(pendiente)_
