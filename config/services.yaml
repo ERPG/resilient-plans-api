@@ -20,7 +20,13 @@ services:
 
     App\Domain\Event\EventRepository: '@App\Infrastructure\Persistence\Doctrine\DoctrineEventRepository'
 
-    App\Application\Search\EventFinder: '@App\Infrastructure\Persistence\Doctrine\DoctrineEventFinder'
+    # Controller gets the caching decorator; inner store is DoctrineEventFinder.
+    App\Application\Search\EventFinder: '@App\Infrastructure\Cache\CachingEventFinder'
+
+    App\Infrastructure\Cache\CachingEventFinder:
+        arguments:
+            $inner: '@App\Infrastructure\Persistence\Doctrine\DoctrineEventFinder'
+            $cache: '@search.cache'
 
     App\Application\Sync\SyncPlansUseCase:
         arguments:

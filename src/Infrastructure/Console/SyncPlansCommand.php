@@ -10,11 +10,12 @@ use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
 use Symfony\Component\Console\Style\SymfonyStyle;
+use Symfony\Component\DependencyInjection\Attribute\Target;
+use Symfony\Contracts\Cache\TagAwareCacheInterface;
 
 /**
- * Thin trigger-agnostic delivery layer: maps the sync outcome to an exit code. Any unreachable
- * provider yields FAILURE (never an uncaught stack trace), while the providers that did respond are
- * still persisted. (Rationale in README.private.md.)
+ * Maps the sync outcome to an exit code. Unreachable providers yield FAILURE; events from providers
+ * that did respond are still persisted.
  */
 #[AsCommand(
     name: 'app:sync-plans',
@@ -24,6 +25,8 @@ final class SyncPlansCommand extends Command
 {
     public function __construct(
         private readonly SyncPlansUseCase $useCase,
+        #[Target('search.cache')]
+        private readonly TagAwareCacheInterface $searchCache,
     ) {
         parent::__construct();
     }
@@ -33,6 +36,11 @@ final class SyncPlansCommand extends Command
         $io = new SymfonyStyle($input, $output);
 
         $report = $this->useCase->run();
+
+        // Guard on writes, not exit code: partial failure still upserts events from healthy providers.
+        if ($report->processed > 0) {
+            $this->searchCache->invalidateTags(['search_results']);
+        }
 
         if ($report->failedProviders > 0) {
             $io->error(sprintf(

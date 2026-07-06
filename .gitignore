@@ -6,6 +6,7 @@ EXECUTION_PLAN*.md
 README.private.md
 DECISIONES_PENDIENTES.md
 MANUAL_TESTING.md
+REDIS_CACHE_EXPLAINER.md
 .cursor/
 .aider
 .continue/

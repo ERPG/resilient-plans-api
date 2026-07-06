@@ -12,6 +12,7 @@ use App\Infrastructure\Console\SyncPlansCommand;
 use App\Infrastructure\Provider\Http\FeverUpPlanProvider;
 use App\Application\Provider\ProviderUnavailable;
 use App\Infrastructure\Provider\Xml\XmlPlanParser;
+use App\Tests\Support\SpyTagAwareCache;
 use Doctrine\DBAL\Connection;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Test\KernelTestCase;
@@ -32,6 +33,7 @@ final class SyncPlansCommandTest extends KernelTestCase
     private EntityManagerInterface $em;
     private Connection $connection;
     private EventRepository $repository;
+    private SpyTagAwareCache $cache;
 
     protected function setUp(): void
     {
@@ -41,6 +43,7 @@ final class SyncPlansCommandTest extends KernelTestCase
         $this->em         = $container->get(EntityManagerInterface::class);
         $this->connection = $this->em->getConnection();
         $this->repository = $container->get(EventRepository::class);
+        $this->cache      = new SpyTagAwareCache();
 
         $this->connection->executeStatement('DELETE FROM events');
         $this->em->clear();
@@ -55,6 +58,8 @@ final class SyncPlansCommandTest extends KernelTestCase
         self::assertSame(Command::SUCCESS, $tester->getStatusCode());
         self::assertSame(4, (int) $this->connection->fetchOne('SELECT count(*) FROM events'));
         self::assertStringContainsString('4 processed', $tester->getDisplay());
+        // Having written rows, the sync must bust the search cache so readers see the new data.
+        self::assertSame(['search_results'], $this->cache->invalidatedTags);
     }
 
     public function testOfflinePlansAreSkippedAndNotPersisted(): void
@@ -107,7 +112,7 @@ final class SyncPlansCommandTest extends KernelTestCase
             }
         };
 
-        $command = new SyncPlansCommand(new SyncPlansUseCase([$down, $healthy], $this->repository));
+        $command = new SyncPlansCommand(new SyncPlansUseCase([$down, $healthy], $this->repository), $this->cache);
         $tester  = new CommandTester($command);
         $tester->execute([]);
 
@@ -127,11 +132,13 @@ final class SyncPlansCommandTest extends KernelTestCase
 
         self::assertSame(Command::SUCCESS, $tester->getStatusCode());
         self::assertSame(0, (int) $this->connection->fetchOne('SELECT count(*) FROM events'));
+        // Nothing changed in the store, so the cache must be left untouched (no needless misses).
+        self::assertSame([], $this->cache->invalidatedTags);
     }
 
     private function tester(PlanProvider $provider): CommandTester
     {
-        $command = new SyncPlansCommand(new SyncPlansUseCase([$provider], $this->repository));
+        $command = new SyncPlansCommand(new SyncPlansUseCase([$provider], $this->repository), $this->cache);
 
         return new CommandTester($command);
     }

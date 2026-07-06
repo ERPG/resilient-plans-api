@@ -1,0 +1,7 @@
+framework:
+    cache:
+        pools:
+            search.cache:
+                adapter: cache.adapter.redis
+                provider: '%env(REDIS_URL)%'
+                tags: true
