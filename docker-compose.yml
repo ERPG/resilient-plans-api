@@ -11,7 +11,8 @@ services:
         condition: service_healthy
     environment:
       DATABASE_URL: "postgresql://app:app@db:5432/fever?serverVersion=16"
-    command: sh -c "composer install --no-interaction && php bin/console doctrine:migrations:migrate --no-interaction && php-fpm"
+      APP_ENV: prod
+    command: sh -c "composer install --no-interaction && php bin/console doctrine:migrations:migrate --no-interaction && php bin/console cache:warmup && php-fpm"
 
   nginx:
     image: nginx:alpine
