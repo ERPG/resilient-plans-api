@@ -16,7 +16,7 @@ shell: ## Shell into app container
 
 # docker-compose sets APP_ENV=prod on the container; bootEnv() respects real env vars over phpunit.xml,
 # so force-override here or the kernel boots in prod and the test service container is absent.
-TEST_DATABASE_URL = postgresql://app:app@db:5432/fever_test?serverVersion=16
+TEST_DATABASE_URL = postgresql://app:app@db:5432/plans_test?serverVersion=16
 TEST_ENV = -e APP_ENV=test -e DATABASE_URL="$(TEST_DATABASE_URL)"
 
 test: ## Run test suite (rebuilds the test DB from scratch, then runs unit + integration tests)

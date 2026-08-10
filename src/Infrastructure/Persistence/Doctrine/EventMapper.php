@@ -18,7 +18,7 @@ final class EventMapper
 {
     // Fixed UUIDv5 namespace. Not a secret (v5 is public); it must just never change — a new value
     // reassigns every id and the upsert would duplicate. Schema identity, so code not env.
-    private const NAMESPACE_NAME = 'urn:fever:events';
+    private const NAMESPACE_NAME = 'urn:resilient-plans-api:events';
 
     public function id(Event $event): Uuid
     {

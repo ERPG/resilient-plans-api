@@ -12,7 +12,7 @@ use Doctrine\Migrations\AbstractMigration;
  * provider can reuse the same external ids without colliding. The (base_plan_id, plan_id) pairing is
  * now folded into the opaque external_identity by the provider's own adapter.
  *
- * ADD ... NOT NULL without a default assumes an empty table. That holds here: in this challenge the
+ * ADD ... NOT NULL without a default assumes an empty table. That holds here: in this project the
  * store is disposable and app:sync-plans is idempotent, so the path is wipe + resync (and the test
  * DB is always rebuilt from scratch). A real production system would instead backfill external_identity
  * from the existing rows before swapping the unique constraint, to keep already-synced history.

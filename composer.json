@@ -1,7 +1,7 @@
 {
-    "name": "fever/plans-microservice",
+    "name": "eparra/resilient-plans-api",
     "type": "project",
-    "license": "proprietary",
+    "license": "MIT",
     "minimum-stability": "stable",
     "prefer-stable": true,
     "require": {

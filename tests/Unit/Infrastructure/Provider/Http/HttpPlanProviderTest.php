@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Tests\Unit\Infrastructure\Provider\Http;
 
-use App\Infrastructure\Provider\Http\FeverUpPlanProvider;
+use App\Infrastructure\Provider\Http\HttpPlanProvider;
 use App\Application\Provider\ProviderUnavailable;
 use App\Infrastructure\Provider\Xml\XmlPlanParser;
 use PHPUnit\Framework\TestCase;
@@ -12,13 +12,13 @@ use Symfony\Component\HttpClient\Exception\TimeoutException;
 use Symfony\Component\HttpClient\MockHttpClient;
 use Symfony\Component\HttpClient\Response\MockResponse;
 
-final class FeverUpPlanProviderTest extends TestCase
+final class HttpPlanProviderTest extends TestCase
 {
     private const URL = 'https://provider.example.test/api/events';
 
-    private function provider(MockHttpClient $client): FeverUpPlanProvider
+    private function provider(MockHttpClient $client): HttpPlanProvider
     {
-        return new FeverUpPlanProvider($client, new XmlPlanParser(), self::URL, timeout: 5.0);
+        return new HttpPlanProvider($client, new XmlPlanParser(), self::URL, timeout: 5.0);
     }
 
     private function fixture(string $name): string

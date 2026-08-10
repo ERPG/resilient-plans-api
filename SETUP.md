@@ -29,9 +29,13 @@ make sync
 ```
 
 This runs `app:sync-plans`: it fetches the provider feed, keeps only `sell_mode=online` plans, and
-does an idempotent upsert into the local store. It is **trigger-agnostic** — in production the
-environment scheduler (cron, K8s CronJob, EventBridge) invokes it; there is no cron or worker inside
-the stack. If the provider is unreachable it exits non-zero without crashing anything else.
+does an idempotent upsert into the local store. Out of the box `PROVIDER_BASE_URL` points at a demo
+feed bundled with the app (served as a static file, zero external dependencies) so the whole stack
+works end-to-end with no setup. Point it at a real provider's endpoint for production use.
+
+The sync is **trigger-agnostic** — in production the environment scheduler (cron, K8s CronJob,
+EventBridge) invokes it; there is no cron or worker inside the stack. If the provider is unreachable
+it exits non-zero without crashing anything else.
 
 ## Query the endpoint
 
@@ -73,7 +77,7 @@ when the provider is down.
 make test
 ```
 
-Rebuilds an isolated `fever_test` database from scratch (drop → create → migrate) and runs the full
+Rebuilds an isolated `plans_test` database from scratch (drop → create → migrate) and runs the full
 suite (unit + integration). No Redis required: the test environment binds the search cache to an
 in-memory array adapter.
 
@@ -84,9 +88,9 @@ Environment variables (see `.env`; overridden per environment):
 | Variable | Purpose | Default |
 |----------|---------|---------|
 | `APP_ENV` | Symfony runtime environment | `dev`; the container runs `prod`, the test suite runs `test` |
-| `DATABASE_URL` | PostgreSQL DSN | `postgresql://app:app@db:5432/fever?serverVersion=16` |
+| `DATABASE_URL` | PostgreSQL DSN | `postgresql://app:app@db:5432/plans?serverVersion=16` |
 | `REDIS_URL` | Redis DSN for the search-result cache | `redis://redis:6379` |
-| `PROVIDER_BASE_URL` | External provider feed URL | provider challenge endpoint |
+| `PROVIDER_BASE_URL` | External provider feed URL | bundled demo feed (static file) |
 | `PROVIDER_TIMEOUT` | Provider HTTP timeout (seconds) — a slow provider can't hang the sync | `5` |
 
 ## Reproducing the benchmark (optional)

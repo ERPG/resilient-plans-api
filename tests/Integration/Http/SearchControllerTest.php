@@ -165,7 +165,7 @@ final class SearchControllerTest extends WebTestCase
     private function event(string $basePlanId, string $title, string $start, ?string $end, array $zones = []): Event
     {
         return new Event(
-            providerName:     ProviderName::FeverUp,
+            providerName:     ProviderName::Demo,
             externalIdentity: $basePlanId . ':1',
             title:            $title,
             sellMode:         SellMode::Online,

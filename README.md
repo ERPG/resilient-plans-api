@@ -1,7 +1,18 @@
-# Fever Code Challenge — Plans Integration Service
+# Resilient Plans API
 
-A microservice that integrates plans from an external provider into the Fever marketplace and exposes
-a single search endpoint. The original assignment is in [`CHALLENGE.md`](CHALLENGE.md).
+A microservice that keeps answering a search endpoint fast and correctly even when the upstream
+data provider it depends on is slow, flaky, or completely down.
+
+## Problem
+
+A marketplace aggregates "plans" (events, experiences) from external providers and needs to expose
+a single search endpoint filtered by date range. Providers are unreliable by nature — slow,
+occasionally down, sometimes returning malformed data — but the search endpoint must never fail or
+slow down because of them. Plans that stop appearing in a provider's feed must remain searchable if
+they were ever seen (they're just no longer being refreshed, not deleted).
+
+This service demonstrates one architecture for that problem: **strictly decoupled write and read
+paths that only meet at the database.**
 
 The core constraint drives the whole design: `GET /search` must stay fast and available **regardless
 of the provider's state**. So the service never calls the provider on the request path — it reads
@@ -33,7 +44,7 @@ database, so a slow or dead provider never affects search.
 
 ## Key design decisions
 
-_(One line each; full reasoning is defended per decision in the interview.)_
+_(One line each.)_
 
 **Identity & storage**
 - Event identity is the pair `(base_plan_id, plan_id)` — `plan_id` alone is not unique, even within a
@@ -51,9 +62,10 @@ _(One line each; full reasoning is defended per decision in the interview.)_
 - The search endpoint **never** touches the provider; only the sync does.
 - Every feed failure (network, timeout, non-2xx, malformed XML) collapses to a single
   `ProviderUnavailable` exception — the caller logs and skips, it never crashes.
-- This is how the brief's "the network won't always behave ideally" warning is handled: the provider
-  client is timeout-bounded, and because the sync runs off the request path, a slow or failing feed
-  never reaches the user — a failed sync just leaves the last good data in place until the next run.
+- Networks don't behave ideally in production — timeouts, partial outages, malformed payloads — so the
+  provider client is timeout-bounded, and because the sync runs off the request path, a slow or
+  failing feed never reaches the user — a failed sync just leaves the last good data in place until
+  the next run.
 - The `sell_mode=online` business rule lives in the Application layer (sync).
 - The sync is **trigger-agnostic and synchronous**: it doesn't know *when* it runs. In production
   something has to invoke it — a scheduler (cron / K8s CronJob) or an async job; that trigger could be
@@ -81,8 +93,8 @@ _(One line each; full reasoning is defended per decision in the interview.)_
 
 ## Going the extra mile
 
-The brief asks about thousands of plans and 5k–10k req/s. The read-side cache is **implemented**; the
-rest is described as conscious evolution.
+Scaling to thousands of plans and 5k–10k req/s is the natural next step for this design. The
+read-side cache is **implemented**; the rest is described as conscious evolution.
 
 - **Redis result cache (implemented).** `CachingEventFinder` decorates the `EventFinder` port. It uses
   event-driven **tag invalidation** (a sync flushes the `search_results` tag → the cache is consistent
@@ -95,7 +107,7 @@ rest is described as conscious evolution.
 - **Thousands of plans (described).** Stream the XML instead of loading the whole document into
   memory, and write in batches rather than one row at a time.
 
-## Scope & trade-offs (intentionally left out for the 72h window)
+## Scope & trade-offs (intentionally out of scope for this POC)
 
 - **No pagination** — at this volume the indexed query answers in milliseconds; it's a documented
   production lever, not silent truncation, and it keeps the contract untouched.
@@ -126,4 +138,3 @@ tests/             # Unit + Integration
 
 - [`SETUP.md`](SETUP.md) — how to run, sync, query and test.
 - [`benchmark-results.md`](benchmark-results.md) — cache throughput measurements.
-- [`CHALLENGE.md`](CHALLENGE.md) — the original assignment.

@@ -12,5 +12,5 @@ namespace App\Domain\Event;
  */
 enum ProviderName: string
 {
-    case FeverUp = 'feverup';
+    case Demo = 'demo';
 }

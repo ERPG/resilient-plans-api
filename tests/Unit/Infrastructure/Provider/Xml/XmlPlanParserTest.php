@@ -13,7 +13,7 @@ use PHPUnit\Framework\TestCase;
 
 final class XmlPlanParserTest extends TestCase
 {
-    private const PROVIDER = ProviderName::FeverUp;
+    private const PROVIDER = ProviderName::Demo;
 
     private XmlPlanParser $parser;
 

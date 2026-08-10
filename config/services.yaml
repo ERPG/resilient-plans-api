@@ -16,7 +16,7 @@ services:
         exclude:
             - '../src/Kernel.php'
 
-    App\Application\Provider\PlanProvider: '@App\Infrastructure\Provider\Http\FeverUpPlanProvider'
+    App\Application\Provider\PlanProvider: '@App\Infrastructure\Provider\Http\HttpPlanProvider'
 
     App\Domain\Event\EventRepository: '@App\Infrastructure\Persistence\Doctrine\DoctrineEventRepository'
 
@@ -32,7 +32,7 @@ services:
         arguments:
             $providers: !tagged_iterator app.plan_provider
 
-    App\Infrastructure\Provider\Http\FeverUpPlanProvider:
+    App\Infrastructure\Provider\Http\HttpPlanProvider:
         arguments:
             $baseUrl: '%env(PROVIDER_BASE_URL)%'
             $timeout: '%env(float:PROVIDER_TIMEOUT)%'

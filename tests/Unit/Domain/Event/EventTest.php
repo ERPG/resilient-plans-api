@@ -20,7 +20,7 @@ final class EventTest extends TestCase
         ?string $endDate   = '2021-06-01T12:00:00+00:00',
     ): Event {
         return new Event(
-            providerName:     ProviderName::FeverUp,
+            providerName:     ProviderName::Demo,
             externalIdentity: '291:123',
             title:            'Test Event',
             sellMode:         $sellMode,

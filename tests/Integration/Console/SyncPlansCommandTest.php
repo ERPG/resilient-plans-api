@@ -9,7 +9,7 @@ use App\Domain\Event\ProviderName;
 use App\Application\Sync\SyncPlansUseCase;
 use App\Domain\Event\EventRepository;
 use App\Infrastructure\Console\SyncPlansCommand;
-use App\Infrastructure\Provider\Http\FeverUpPlanProvider;
+use App\Infrastructure\Provider\Http\HttpPlanProvider;
 use App\Application\Provider\ProviderUnavailable;
 use App\Infrastructure\Provider\Xml\XmlPlanParser;
 use App\Tests\Support\SpyTagAwareCache;
@@ -144,9 +144,9 @@ final class SyncPlansCommandTest extends KernelTestCase
     }
 
     /** Real provider stack (HTTP + XML parse) fed a fixture, so the online filter runs for real. */
-    private function httpProvider(string $fixture): FeverUpPlanProvider
+    private function httpProvider(string $fixture): HttpPlanProvider
     {
-        return new FeverUpPlanProvider($this->mockClient($fixture), new XmlPlanParser(), self::URL);
+        return new HttpPlanProvider($this->mockClient($fixture), new XmlPlanParser(), self::URL);
     }
 
     private function mockClient(string $fixture): HttpClientInterface
